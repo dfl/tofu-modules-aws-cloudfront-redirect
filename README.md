@@ -42,6 +42,8 @@ tofu plan
 | create_records   | Create DNS records using Route 53. A hosted zone matching the source domain must exist. If `false`, the certificate must be manually validated. | `bool`        | `true`  | no       |
 | source_subdomain | Optional subdomain for the source redirect. Required if the fully qualified domain name (FQDN) is a subdomain of the hosted zone domain.        | `string`      | `null`  | no       |
 | static           | Redirect to the destination without passing the path.                                                                                           | `bool`        | `false` | no       |
+| forward_query    | Forward the incoming request's query string to the destination.                                                                                 | `bool`        | `true`  | no       |
+| track_referrer   | Capture the incoming `Referer` header and forward it to the destination as a `ref` query parameter.                                             | `bool`        | `false` | no       |
 | status_code      | HTTP status code for the redirect. Must be either 301 (permanent) or 302 (temporary).                                                           | `number`      | `301`   | no       |
 | tags             | Tags to apply to all resources.                                                                                                                 | `map(string)` | `{}`    | no       |
 

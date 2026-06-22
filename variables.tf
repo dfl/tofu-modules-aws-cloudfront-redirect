@@ -14,6 +14,17 @@ variable "destination" {
     EOT
 }
 
+variable "forward_query" {
+  type        = bool
+  description = <<-EOT
+    Forward the incoming request's query string to the destination. When the
+    destination already contains query parameters, the incoming parameters are
+    appended (incoming keys can collide with destination keys; browsers will
+    typically honor the last occurrence).
+    EOT
+  default     = true
+}
+
 variable "logging_bucket" {
   description = "The S3 bucket used for logging."
   type        = string
@@ -54,6 +65,19 @@ variable "status_code" {
     condition     = contains([301, 302], var.status_code)
     error_message = "Status code must be either 301 or 302."
   }
+}
+
+variable "track_referrer" {
+  type        = bool
+  description = <<-EOT
+    Capture the incoming `Referer` header and forward it to the destination as
+    a `ref` query parameter. Useful for attributing traffic that arrived at the
+    redirect domain via a link from an upstream site — that information is
+    otherwise lost across the 301/302 hop, because the browser's `Referer` on
+    the final request reflects the redirect domain rather than the upstream
+    source.
+    EOT
+  default     = false
 }
 
 variable "tags" {

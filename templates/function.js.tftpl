@@ -2,14 +2,36 @@ function handler(event) {
   const DESTINATION = "${destination}";
   const STATIC = ${static};
   const STATUS_CODE = ${status_code};
+  const FORWARD_QUERY = ${forward_query};
+  const TRACK_REFERRER = ${track_referrer};
 
   const request = event.request;
+  const params = new URLSearchParams();
+
+  if (FORWARD_QUERY) {
+    for (const key in request.querystring) {
+      params.set(key, request.querystring[key].value);
+    }
+  }
+
+  if (TRACK_REFERRER) {
+    const header = request.headers.referer;
+    const referer = header && header.value;
+    if (referer && !params.has('ref')) {
+      params.set('ref', referer);
+    }
+  }
+
+  const path = STATIC ? '' : request.uri;
+  const qs = params.toString();
+  const sep = DESTINATION.indexOf('?') === -1 ? '?' : '&';
+  const location = DESTINATION + path + (qs ? sep + qs : '');
 
   return {
     statusCode: STATUS_CODE,
-    statusDescription: 'Moved Permanently',
+    statusDescription: STATUS_CODE === 301 ? 'Moved Permanently' : 'Found',
     headers: {
-      "location": { "value": DESTINATION + (STATIC ? '' : request.uri) }
+      "location": { "value": location }
     }
   };
 }
