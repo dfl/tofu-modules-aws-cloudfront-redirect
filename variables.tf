@@ -76,8 +76,16 @@ variable "track_referrer" {
     otherwise lost across the 301/302 hop, because the browser's `Referer` on
     the final request reflects the redirect domain rather than the upstream
     source.
+
+    If the incoming query already contains `ref`, the incoming value is
+    preserved and the `Referer` header is not captured.
     EOT
   default     = false
+
+  validation {
+    condition     = !var.track_referrer || var.status_code != 301
+    error_message = "track_referrer with status_code=301 will only capture attribution on the first visit per browser, since 301s are aggressively cached. Use status_code=302."
+  }
 }
 
 variable "tags" {
