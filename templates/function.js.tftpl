@@ -6,26 +6,29 @@ function handler(event) {
   const TRACK_REFERRER = ${track_referrer};
 
   const request = event.request;
-  const params = new URLSearchParams();
+  const queryParams = new URLSearchParams();
 
   if (FORWARD_QUERY) {
     for (const key in request.querystring) {
-      params.set(key, request.querystring[key].value);
+      queryParams.set(key, request.querystring[key].value);
     }
   }
 
   if (TRACK_REFERRER) {
-    const header = request.headers.referer;
-    const referer = header && header.value;
-    if (referer && !params.has('ref')) {
-      params.set('ref', referer);
+    const refererHeader = request.headers.referer;
+    const referer = refererHeader && refererHeader.value;
+    if (referer && !queryParams.has('ref')) {
+      queryParams.set('ref', referer);
     }
   }
 
+  // Build the redirect Location: append the original path (unless static),
+  // then append the collected query parameters using '?' or '&' depending
+  // on whether the destination URL already contains a query string.
   const path = STATIC ? '' : request.uri;
-  const qs = params.toString();
-  const sep = DESTINATION.indexOf('?') === -1 ? '?' : '&';
-  const location = DESTINATION + path + (qs ? sep + qs : '');
+  const queryString = queryParams.toString();
+  const querySeparator = DESTINATION.indexOf('?') === -1 ? '?' : '&';
+  const location = DESTINATION + path + (queryString ? querySeparator + queryString : '');
 
   return {
     statusCode: STATUS_CODE,
