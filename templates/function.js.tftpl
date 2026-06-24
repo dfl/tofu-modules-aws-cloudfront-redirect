@@ -25,7 +25,17 @@ function handler(event) {
   // Build the redirect Location: append the original path (unless static),
   // then append the collected query parameters using '?' or '&' depending
   // on whether the destination URL already contains a query string.
-  const path = STATIC ? '' : request.uri;
+  let path = STATIC ? '' : request.uri;
+  if (path) {
+    // Avoid duplicating the destination's own path prefix: a destination of
+    // ".../es" plus an incoming "/es/foo" should yield "/es/foo", not
+    // "/es/es/foo". Only strips on an exact match or a '/' boundary, so
+    // "/estimate" is left untouched.
+    const destPath = DESTINATION.replace(/^https?:\/\/[^/]+/, '');
+    if (destPath && (path === destPath || path.indexOf(destPath + '/') === 0)) {
+      path = path.slice(destPath.length);
+    }
+  }
   const queryString = queryParams.toString();
   const querySeparator = DESTINATION.indexOf('?') === -1 ? '?' : '&';
   const location = DESTINATION + path + (queryString ? querySeparator + queryString : '');
