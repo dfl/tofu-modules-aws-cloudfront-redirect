@@ -2,7 +2,8 @@ variable "create_records" {
   type        = bool
   description = <<-EOT
     Create DNS records using Route 53. A hosted zone matching the source domain
-    must exist. If `false`, the certificate must be manually validated.
+    must exist. If `false`, the certificate must be manually validated. Only
+    applies when `create_distribution` is `true`.
     EOT
   default     = true
 }
@@ -15,8 +16,16 @@ variable "destination" {
 }
 
 variable "logging_bucket" {
-  description = "The S3 bucket used for logging."
+  description = "The S3 bucket used for logging. Required when `create_distribution` is `true`."
   type        = string
+  default     = null
+
+  # OpenTofu supports cross-variable validation; enforce logging_bucket
+  # is required when create_distribution is true.
+  validation {
+    condition     = !var.create_distribution || var.logging_bucket != null
+    error_message = "logging_bucket is required when create_distribution is true."
+  }
 }
 
 variable "source_domain" {
@@ -60,4 +69,14 @@ variable "tags" {
   type        = map(string)
   description = "Tags to apply to all resources."
   default     = {}
+}
+
+variable "create_distribution" {
+  type        = bool
+  description = <<-EOT
+    Create a new CloudFront distribution. Set to `false` to only create the
+    redirect function and attach it to an existing distribution via the
+    `function_arn` output.
+    EOT
+  default     = true
 }
