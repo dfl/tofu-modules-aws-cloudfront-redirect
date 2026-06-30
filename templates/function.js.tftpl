@@ -7,19 +7,19 @@ function handler(event) {
   const TRACK_REFERRER = ${track_referrer};
 
   const request = event.request;
-  const queryParams = new URLSearchParams();
+  const queryParams = {};
 
   if (FORWARD_QUERY) {
     for (const key in request.querystring) {
-      queryParams.set(key, request.querystring[key].value);
+      queryParams[key] = request.querystring[key].value;
     }
   }
 
   if (TRACK_REFERRER) {
     const refererHeader = request.headers.referer;
     const referer = refererHeader && refererHeader.value;
-    if (referer && !queryParams.has('ref')) {
-      queryParams.set('ref', referer);
+    if (referer && !('ref' in queryParams)) {
+      queryParams['ref'] = referer;
     }
   }
 
@@ -37,7 +37,11 @@ function handler(event) {
       path = path.slice(destPath.length);
     }
   }
-  const queryString = queryParams.toString();
+  const queryParts = [];
+  for (const key in queryParams) {
+    queryParts.push(encodeURIComponent(key) + '=' + encodeURIComponent(queryParams[key]));
+  }
+  const queryString = queryParts.join('&');
   const querySeparator = DESTINATION.indexOf('?') === -1 ? '?' : '&';
   const location = DESTINATION + path + (queryString ? querySeparator + queryString : '');
 
