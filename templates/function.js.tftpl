@@ -1,5 +1,6 @@
 function handler(event) {
   const DESTINATION = "${destination}";
+  const PATH = ${ path != null ? "\"${path}\"" : "null" };
   const STATIC = ${static};
   const STATUS_CODE = ${status_code};
   const FORWARD_QUERY = ${forward_query};
@@ -39,6 +40,11 @@ function handler(event) {
   const queryString = queryParams.toString();
   const querySeparator = DESTINATION.indexOf('?') === -1 ? '?' : '&';
   const location = DESTINATION + path + (queryString ? querySeparator + queryString : '');
+
+  // When a path is configured, only redirect requests that match.
+  if (PATH !== null && !request.uri.startsWith(PATH)) {
+    return request;
+  }
 
   return {
     statusCode: STATUS_CODE,

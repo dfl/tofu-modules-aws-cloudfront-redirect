@@ -6,6 +6,7 @@ resource "aws_cloudfront_function" "this" {
   code = templatefile("${path.module}/templates/function.js.tftpl", {
     destination    = var.destination
     forward_query  = var.forward_query
+    path           = var.path
     static         = var.static
     status_code    = var.status_code
     track_referrer = var.track_referrer
